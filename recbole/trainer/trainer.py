@@ -189,7 +189,7 @@ class Trainer(AbstractTrainer):
                 loss = losses
                 # total_loss = losses.item() if total_loss is None else total_loss + losses.item()
                 total_loss = losses.detach() if total_loss is None else total_loss + losses.detach()
-            self._check_nan(loss)
+            # self._check_nan(loss)
             loss.backward()
             if self.clip_grad_norm:
                 clip_grad_norm_(self.model.parameters(), **self.clip_grad_norm)
