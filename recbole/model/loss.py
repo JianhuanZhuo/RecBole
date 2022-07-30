@@ -83,11 +83,12 @@ class EmbLoss(nn.Module):
             emb_loss /= self.norm
             return emb_loss
         else:
-            emb_loss = torch.zeros(1).to(embeddings[-1].device)
-            for embedding in embeddings:
-                emb_loss += torch.norm(embedding, p=self.norm)
-            emb_loss /= embeddings[-1].shape[0]
-            return emb_loss
+            # emb_loss = torch.zeros(1).to(embeddings[-1].device)
+            # for embedding in embeddings:
+            #     emb_loss += torch.norm(embedding, p=self.norm)
+            # emb_loss /= embeddings[-1].shape[0]
+            # return emb_loss
+            return sum([torch.norm(e) for e in embeddings]) / embeddings[-1].shape[0]
 
 
 class EmbMarginLoss(nn.Module):
