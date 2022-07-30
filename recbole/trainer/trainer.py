@@ -166,7 +166,7 @@ class Trainer(AbstractTrainer):
         """
         self.model.train()
         loss_func = loss_func or self.model.calculate_loss
-        total_loss = None
+        total_loss = torch.zeros(1, device=self.device)
         iter_data = (
             tqdm(
                 train_data,
@@ -181,11 +181,14 @@ class Trainer(AbstractTrainer):
             losses = loss_func(interaction)
             if isinstance(losses, tuple):
                 loss = sum(losses)
-                loss_tuple = tuple(per_loss.item() for per_loss in losses)
+                # loss_tuple = tuple(per_loss.item() for per_loss in losses)
+                # total_loss = loss_tuple if total_loss is None else tuple(map(sum, zip(total_loss, loss_tuple)))
+                loss_tuple = tuple(per_loss.detach() for per_loss in losses)
                 total_loss = loss_tuple if total_loss is None else tuple(map(sum, zip(total_loss, loss_tuple)))
             else:
                 loss = losses
-                total_loss = losses.item() if total_loss is None else total_loss + losses.item()
+                # total_loss = losses.item() if total_loss is None else total_loss + losses.item()
+                total_loss = losses.detach() if total_loss is None else total_loss + losses.detach()
             self._check_nan(loss)
             loss.backward()
             if self.clip_grad_norm:
@@ -193,6 +196,7 @@ class Trainer(AbstractTrainer):
             self.optimizer.step()
             if self.gpu_available and show_progress:
                 iter_data.set_postfix_str(set_color('GPU RAM: ' + get_gpu_usage(self.device), 'yellow'))
+        total_loss = total_loss.item()
         return total_loss
 
     def _valid_epoch(self, valid_data, show_progress=False):
